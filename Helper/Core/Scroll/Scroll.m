@@ -161,24 +161,30 @@ static MFReadWriteTracker _readWriteTracker;
 
 #pragma clang diagnostic pop
 
-static void invertHIDScrollEvent(HIDEvent *hidEvent) {
-    if (hidEvent.type == kIOHIDEventTypeScroll) {
-        [hidEvent setDoubleValue: -[hidEvent doubleValueForField: kIOHIDEventFieldScrollX] forField: kIOHIDEventFieldScrollX];
-        [hidEvent setDoubleValue: -[hidEvent doubleValueForField: kIOHIDEventFieldScrollY] forField: kIOHIDEventFieldScrollY];
+/// Exported by IOKit / CoreGraphics since macOS 10.13. (The `HIDEvent` ObjC methods would need the private HID.framework.) [Nov 2026]
+extern IOHIDEventRef    CGEventCopyIOHIDEvent(CGEventRef event);
+extern IOHIDEventType   IOHIDEventGetType(IOHIDEventRef event);
+extern CFArrayRef       IOHIDEventGetChildren(IOHIDEventRef event);
+extern IOHIDFloat       IOHIDEventGetFloatValue(IOHIDEventRef event, IOHIDEventField field);
+extern void             IOHIDEventSetFloatValue(IOHIDEventRef event, IOHIDEventField field, IOHIDFloat value);
+
+static void invertIOHIDScrollEvent(IOHIDEventRef hidEvent) {
+    if (IOHIDEventGetType(hidEvent) == kIOHIDEventTypeScroll) {
+        IOHIDEventSetFloatValue(hidEvent, kIOHIDEventFieldScrollX, -IOHIDEventGetFloatValue(hidEvent, kIOHIDEventFieldScrollX));
+        IOHIDEventSetFloatValue(hidEvent, kIOHIDEventFieldScrollY, -IOHIDEventGetFloatValue(hidEvent, kIOHIDEventFieldScrollY));
     }
-    for (HIDEvent *child in hidEvent.children) invertHIDScrollEvent(child);
+    CFArrayRef children = IOHIDEventGetChildren(hidEvent);
+    if (children != NULL) {
+        for (CFIndex i = 0; i < CFArrayGetCount(children); i++) {
+            invertIOHIDScrollEvent((IOHIDEventRef)CFArrayGetValueAtIndex(children, i));
+        }
+    }
 }
 
 static void invertScrollEvent(CGEventRef event) {
     
-    /// Inverts the scroll direction of a (line-based) scroll event in-place. Used for App Exceptions. [Nov 2026]
-    ///     We invert both the CGEvent fields and the attached IOHIDEvent: Real scroll wheel events carry an IOHIDEvent and some apps read their deltas from that instead of the CGEvent fields. (WebKit reads its raw deltas from it – see GestureScrollSimulator.m.)
-    ///     Setting values on the `HIDEvent` returned by `CGEventGetHIDEvent()` modifies the event's own IOHIDEvent (Tested [Nov 2026]), so there's no need to re-attach it.
-    
-    /// Read all values before writing anything:
-    ///     Setting `kCGScrollWheelEventDeltaAxis` makes CoreGraphics recompute the FixedPt and Point deltas from the line delta (as `line * 1.0` and `line * 8`). (Observed [Nov 2026])
-    ///     So we write the line deltas first and then overwrite the FixedPt and Point deltas with the inverted originals. That also keeps macOS' precise, accelerated values.
-    ///     Chrome reads the FixedPt / Point deltas, so getting this wrong leaves the scroll direction unchanged in Chrome.
+    /// Inverts a scroll event in-place, for App Exceptions. Also inverts the attached IOHIDEvent, since some apps (WebKit) read that. [Nov 2026]
+    /// Read everything first: setting the line delta makes CoreGraphics recompute the FixedPt and Point deltas (which Chrome reads).
     int64_t origLine1  = CGEventGetIntegerValueField(event, kCGScrollWheelEventDeltaAxis1);
     int64_t origLine2  = CGEventGetIntegerValueField(event, kCGScrollWheelEventDeltaAxis2);
     double  origFixed1 = CGEventGetDoubleValueField (event, kCGScrollWheelEventFixedPtDeltaAxis1);
@@ -193,8 +199,11 @@ static void invertScrollEvent(CGEventRef event) {
     CGEventSetIntegerValueField(event, kCGScrollWheelEventPointDeltaAxis1,  -origPoint1);
     CGEventSetIntegerValueField(event, kCGScrollWheelEventPointDeltaAxis2,  -origPoint2);
     
-    HIDEvent *hidEvent = CGEventGetHIDEvent(event);
-    if (hidEvent != nil) invertHIDScrollEvent(hidEvent);
+    IOHIDEventRef hidEvent = CGEventCopyIOHIDEvent(event); /// Modifying it modifies the event's own IOHIDEvent
+    if (hidEvent != NULL) {
+        invertIOHIDScrollEvent(hidEvent);
+        CFRelease(hidEvent);
+    }
 }
 
 static void eventTapCallback(MFEventType eventType, CGEventRef *eventPtr) {
