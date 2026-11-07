@@ -101,6 +101,7 @@
 		4F5971E62901763D00A32656 /* MathObjc.m in Sources */ = {isa = PBXBuildFile; fileRef = 4F5971E42901763D00A32656 /* MathObjc.m */; };
 		4F5C2F802885C5D0001B9B8A /* HelperState.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4F5C2F7F2885C5D0001B9B8A /* HelperState.swift */; };
 		4F5F3EF12756EC0400C350C0 /* RemapSwizzler.m in Sources */ = {isa = PBXBuildFile; fileRef = 4F5F3EF02756EC0400C350C0 /* RemapSwizzler.m */; };
+		D07A5C0F2EC0A00100A1F002 /* ScrollAppFilter.swift in Sources */ = {isa = PBXBuildFile; fileRef = D07A5C0F2EC0A00100A1F001 /* ScrollAppFilter.swift */; };
 		4F5F3EF32756F1DB00C350C0 /* ScrollModifiers.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4F5F3EF22756F1DB00C350C0 /* ScrollModifiers.swift */; };
 		4F626E99292A842D00E6FFD5 /* KeyCaptureMode.m in Sources */ = {isa = PBXBuildFile; fileRef = 4F626E98292A842D00E6FFD5 /* KeyCaptureMode.m */; };
 		4F67978C2DCFB76100516167 /* DevToggles.m in Sources */ = {isa = PBXBuildFile; fileRef = 4F67978B2DCFB76100516167 /* DevToggles.m */; };
@@ -138,6 +139,7 @@
 		4F8D2C5928A035EA0060F76F /* Mac Mouse Fix Helper.app in Copy MMF Helper */ = {isa = PBXBuildFile; fileRef = 4FCECD8021092354001F1078 /* Mac Mouse Fix Helper.app */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		4F909CF028A0C3B7009349A2 /* MainAppState.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4F909CEF28A0C3B6009349A2 /* MainAppState.swift */; };
 		4F909D2128A0C3D2009349A2 /* GeneralTabController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4F909CF628A0C3D2009349A2 /* GeneralTabController.swift */; };
+		D07A5C0F2EC0A00100A1F004 /* ScrollTabAppFilter.swift in Sources */ = {isa = PBXBuildFile; fileRef = D07A5C0F2EC0A00100A1F003 /* ScrollTabAppFilter.swift */; };
 		4F909D2228A0C3D2009349A2 /* ScrollTabController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4F909CF728A0C3D2009349A2 /* ScrollTabController.swift */; };
 		D07A5C0F2EC0A00100A1F012 /* ScrollTabMirroring.swift in Sources */ = {isa = PBXBuildFile; fileRef = D07A5C0F2EC0A00100A1F011 /* ScrollTabMirroring.swift */; };
 		4F909D2328A0C3D2009349A2 /* PointerTabController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4F909CF828A0C3D2009349A2 /* PointerTabController.swift */; };
@@ -762,6 +764,7 @@
 		4F5F3EED2756DB0A00C350C0 /* RemapsOverrider_old_.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RemapsOverrider_old_.swift; sourceTree = "<group>"; };
 		4F5F3EEF2756DD1200C350C0 /* RemapSwizzler.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = RemapSwizzler.h; sourceTree = "<group>"; };
 		4F5F3EF02756EC0400C350C0 /* RemapSwizzler.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = RemapSwizzler.m; sourceTree = "<group>"; };
+		D07A5C0F2EC0A00100A1F001 /* ScrollAppFilter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScrollAppFilter.swift; sourceTree = "<group>"; };
 		4F5F3EF22756F1DB00C350C0 /* ScrollModifiers.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScrollModifiers.swift; sourceTree = "<group>"; };
 		4F5FC0612D6206E3009DCF10 /* UndeprecateSimpleUnboxing.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = UndeprecateSimpleUnboxing.h; sourceTree = "<group>"; };
 		4F616D6027BDCD56004A6A72 /* ScrollConfigTesting.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = ScrollConfigTesting.md; sourceTree = "<group>"; };
@@ -820,6 +823,7 @@
 		4F8CF94528686C0100BF5E55 /* DoublesMatrix.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DoublesMatrix.m; sourceTree = "<group>"; };
 		4F909CEF28A0C3B6009349A2 /* MainAppState.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MainAppState.swift; sourceTree = "<group>"; };
 		4F909CF628A0C3D2009349A2 /* GeneralTabController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = GeneralTabController.swift; sourceTree = "<group>"; };
+		D07A5C0F2EC0A00100A1F003 /* ScrollTabAppFilter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScrollTabAppFilter.swift; sourceTree = "<group>"; };
 		4F909CF728A0C3D2009349A2 /* ScrollTabController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ScrollTabController.swift; sourceTree = "<group>"; };
 		D07A5C0F2EC0A00100A1F011 /* ScrollTabMirroring.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScrollTabMirroring.swift; sourceTree = "<group>"; };
 		4F909CF828A0C3D2009349A2 /* PointerTabController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PointerTabController.swift; sourceTree = "<group>"; };
@@ -1781,6 +1785,7 @@
 				4F909CF628A0C3D2009349A2 /* GeneralTabController.swift */,
 				4F6F67A128A8188000C6C40F /* ButtonTab */,
 				4F909CF728A0C3D2009349A2 /* ScrollTabController.swift */,
+				D07A5C0F2EC0A00100A1F003 /* ScrollTabAppFilter.swift */,
 				D07A5C0F2EC0A00100A1F011 /* ScrollTabMirroring.swift */,
 				4F909CF828A0C3D2009349A2 /* PointerTabController.swift */,
 				4F7D97A528AEB2EE00C11E79 /* AboutTabController.swift */,
@@ -2720,6 +2725,7 @@
 				4FF6662C25F2C93A00689B77 /* Scroll.h */,
 				4FF6662125F2C93A00689B77 /* Scroll.m */,
 				4F7CFFF02E60F4B900ACEDEF /* Bug Log [Aug 2025] - Scroll Stopped Working.md */,
+				D07A5C0F2EC0A00100A1F001 /* ScrollAppFilter.swift */,
 				4FA994BC26678AC90007F003 /* ScrollAnalyzer.h */,
 				4FA994BD26678AC90007F003 /* ScrollAnalyzer.m */,
 				4FF6662925F2C93A00689B77 /* ScrollModifiers.h */,
@@ -3545,6 +3551,7 @@
 				4F909D2A28A0C3D2009349A2 /* ResizingTabWindowController.swift in Sources */,
 				4FA06819291B2C4C00949B5F /* Shorthands.m in Sources */,
 				4F909D2228A0C3D2009349A2 /* ScrollTabController.swift in Sources */,
+				D07A5C0F2EC0A00100A1F004 /* ScrollTabAppFilter.swift in Sources */,
 				D07A5C0F2EC0A00100A1F012 /* ScrollTabMirroring.swift in Sources */,
 				4F6F67A028A8141800C6C40F /* ButtonTabController.swift in Sources */,
 				4FF6654E25F2C7B000689B77 /* SharedUtility.m in Sources */,
@@ -3875,6 +3882,7 @@
 				4FA83A2E268288D900F3A31B /* PointerConfig.swift in Sources */,
 				4FE78C3B2C50177800C54103 /* DisableSwiftBridging.swift in Sources */,
 				4F8A8DBD287F203D00786BCC /* IOHIDAccelerationTable.cpp in Sources */,
+				D07A5C0F2EC0A00100A1F002 /* ScrollAppFilter.swift in Sources */,
 				4F5F3EF32756F1DB00C350C0 /* ScrollModifiers.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

@@ -62,6 +62,7 @@ import Cocoa
         _defaultInstance = ScrollConfig()
         _scrollConfigRaw = newConfigRaw
         cache = nil
+        ScrollAppFilter.reload() /// [Nov 2026]
         //ReactiveScrollConfig.shared.handleScrollConfigChanged(newValue: shared)
         SwitchMaster_ScrollConfigChanged(_defaultInstance);
     }

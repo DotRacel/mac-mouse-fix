@@ -326,6 +326,10 @@ class ScrollTabController: NSViewController {
 //            }
         }
         
+        /// App exceptions [Nov 2026]
+        ///     See `ScrollTabAppFilter.swift`
+        installAppFilterSection()
+
         /// iPhone Mirroring [Nov 2026]
         ///     See `ScrollTabMirroring.swift`
         installMirroringSection()

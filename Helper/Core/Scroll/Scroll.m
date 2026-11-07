@@ -231,6 +231,51 @@ static uint64_t mirroringSenderIDForEvent(CGEventRef event) {
 
 #pragma clang diagnostic pop
 
+/// Exported by IOKit / CoreGraphics since macOS 10.13. (The `HIDEvent` ObjC methods would need the private HID.framework.) [Nov 2026]
+extern IOHIDEventRef    CGEventCopyIOHIDEvent(CGEventRef event);
+extern IOHIDEventType   IOHIDEventGetType(IOHIDEventRef event);
+extern CFArrayRef       IOHIDEventGetChildren(IOHIDEventRef event);
+extern IOHIDFloat       IOHIDEventGetFloatValue(IOHIDEventRef event, IOHIDEventField field);
+extern void             IOHIDEventSetFloatValue(IOHIDEventRef event, IOHIDEventField field, IOHIDFloat value);
+
+static void invertIOHIDScrollEvent(IOHIDEventRef hidEvent) {
+    if (IOHIDEventGetType(hidEvent) == kIOHIDEventTypeScroll) {
+        IOHIDEventSetFloatValue(hidEvent, kIOHIDEventFieldScrollX, -IOHIDEventGetFloatValue(hidEvent, kIOHIDEventFieldScrollX));
+        IOHIDEventSetFloatValue(hidEvent, kIOHIDEventFieldScrollY, -IOHIDEventGetFloatValue(hidEvent, kIOHIDEventFieldScrollY));
+    }
+    CFArrayRef children = IOHIDEventGetChildren(hidEvent);
+    if (children != NULL) {
+        for (CFIndex i = 0; i < CFArrayGetCount(children); i++) {
+            invertIOHIDScrollEvent((IOHIDEventRef)CFArrayGetValueAtIndex(children, i));
+        }
+    }
+}
+
+static void invertScrollEvent(CGEventRef event) {
+    
+    /// Inverts a scroll event in-place, for App Exceptions. Also inverts the attached IOHIDEvent, since some apps (WebKit) read that. [Nov 2026]
+    /// Read everything first: setting the line delta makes CoreGraphics recompute the FixedPt and Point deltas (which Chrome reads).
+    int64_t origLine1  = CGEventGetIntegerValueField(event, kCGScrollWheelEventDeltaAxis1);
+    int64_t origLine2  = CGEventGetIntegerValueField(event, kCGScrollWheelEventDeltaAxis2);
+    double  origFixed1 = CGEventGetDoubleValueField (event, kCGScrollWheelEventFixedPtDeltaAxis1);
+    double  origFixed2 = CGEventGetDoubleValueField (event, kCGScrollWheelEventFixedPtDeltaAxis2);
+    int64_t origPoint1 = CGEventGetIntegerValueField(event, kCGScrollWheelEventPointDeltaAxis1);
+    int64_t origPoint2 = CGEventGetIntegerValueField(event, kCGScrollWheelEventPointDeltaAxis2);
+    
+    CGEventSetIntegerValueField(event, kCGScrollWheelEventDeltaAxis1,       -origLine1);
+    CGEventSetIntegerValueField(event, kCGScrollWheelEventDeltaAxis2,       -origLine2);
+    CGEventSetDoubleValueField (event, kCGScrollWheelEventFixedPtDeltaAxis1, -origFixed1);
+    CGEventSetDoubleValueField (event, kCGScrollWheelEventFixedPtDeltaAxis2, -origFixed2);
+    CGEventSetIntegerValueField(event, kCGScrollWheelEventPointDeltaAxis1,  -origPoint1);
+    CGEventSetIntegerValueField(event, kCGScrollWheelEventPointDeltaAxis2,  -origPoint2);
+    
+    IOHIDEventRef hidEvent = CGEventCopyIOHIDEvent(event); /// Modifying it modifies the event's own IOHIDEvent
+    if (hidEvent != NULL) {
+        invertIOHIDScrollEvent(hidEvent);
+        CFRelease(hidEvent);
+    }
+}
+
 static void eventTapCallback(MFEventType eventType, CGEventRef *eventPtr) {
 
     assertRunLoop(IOThread.runLoop);
@@ -264,6 +309,23 @@ static void eventTapCallback(MFEventType eventType, CGEventRef *eventPtr) {
     ///     Get timestamp here instead of _scrollQueue for accurate timing
     ///     §afterNoGCDTodo We found that the HIDEvent's timestamps are much more accurate - try using that instead of CGEventGetTimeStamp() / CACurrentMediaTime() throughout codebase. [Oct 2026]
     CFTimeInterval tickTime = CGEventGetTimestampInSeconds(event, kTapLocation_Listening);
+    
+    /// App Exceptions (`Scroll.appExceptions`) [Nov 2026]
+    ///     For these apps, let the original event through instead of smooth scrolling, so they get native scroll wheel input.
+    ///     'Reverse Direction' still applies – we invert the original event. Speed and keyboard modifiers don't apply. See `ScrollAppFilter.swift`.
+    ///     When we enter an exception app, stop any running animation, so its inertia doesn't scroll that app.
+    static BOOL _isInAppException = NO;
+    BOOL isAppException = [ScrollAppFilter isAppException: event tickTime: tickTime];
+    if (isAppException != _isInAppException) {
+        _isInAppException = isAppException;
+        if (isAppException) { allowNestedReadOrWrite() [Scroll resetState]; }
+    }
+    if (isAppException) {
+        if (ScrollConfig.defaultInstance.u_invertDirection == kMFScrollInversionInverted) {
+            invertScrollEvent(event);
+        }
+        return;
+    }
 
     /// Do the actual work
     ///     We used to do this on a separate dispatch queue before the 'No more dispatch queues' refactor. Deleted the comments about why [Oct 2026]

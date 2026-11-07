@@ -25,6 +25,8 @@
 		<string>high</string>
 		<key>speed</key>
 		<string>medium</string>
+		<key>appExceptions</key>
+		<array/>
 		<key>iPhoneMirroring</key>
 		<false/>
 		<key>iPhoneMirroringSpeed</key>
