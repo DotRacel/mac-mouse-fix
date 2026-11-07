@@ -139,6 +139,7 @@
 		4F909CF028A0C3B7009349A2 /* MainAppState.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4F909CEF28A0C3B6009349A2 /* MainAppState.swift */; };
 		4F909D2128A0C3D2009349A2 /* GeneralTabController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4F909CF628A0C3D2009349A2 /* GeneralTabController.swift */; };
 		4F909D2228A0C3D2009349A2 /* ScrollTabController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4F909CF728A0C3D2009349A2 /* ScrollTabController.swift */; };
+		D07A5C0F2EC0A00100A1F012 /* ScrollTabMirroring.swift in Sources */ = {isa = PBXBuildFile; fileRef = D07A5C0F2EC0A00100A1F011 /* ScrollTabMirroring.swift */; };
 		4F909D2328A0C3D2009349A2 /* PointerTabController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4F909CF828A0C3D2009349A2 /* PointerTabController.swift */; };
 		4F909D2428A0C3D2009349A2 /* TabItemControllerProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4F909CF928A0C3D2009349A2 /* TabItemControllerProtocol.swift */; };
 		4F909D2528A0C3D2009349A2 /* TabViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4F909CFA28A0C3D2009349A2 /* TabViewController.swift */; };
@@ -820,6 +821,7 @@
 		4F909CEF28A0C3B6009349A2 /* MainAppState.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MainAppState.swift; sourceTree = "<group>"; };
 		4F909CF628A0C3D2009349A2 /* GeneralTabController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = GeneralTabController.swift; sourceTree = "<group>"; };
 		4F909CF728A0C3D2009349A2 /* ScrollTabController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ScrollTabController.swift; sourceTree = "<group>"; };
+		D07A5C0F2EC0A00100A1F011 /* ScrollTabMirroring.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScrollTabMirroring.swift; sourceTree = "<group>"; };
 		4F909CF828A0C3D2009349A2 /* PointerTabController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PointerTabController.swift; sourceTree = "<group>"; };
 		4F909CF928A0C3D2009349A2 /* TabItemControllerProtocol.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TabItemControllerProtocol.swift; sourceTree = "<group>"; };
 		4F909CFA28A0C3D2009349A2 /* TabViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TabViewController.swift; sourceTree = "<group>"; };
@@ -1779,6 +1781,7 @@
 				4F909CF628A0C3D2009349A2 /* GeneralTabController.swift */,
 				4F6F67A128A8188000C6C40F /* ButtonTab */,
 				4F909CF728A0C3D2009349A2 /* ScrollTabController.swift */,
+				D07A5C0F2EC0A00100A1F011 /* ScrollTabMirroring.swift */,
 				4F909CF828A0C3D2009349A2 /* PointerTabController.swift */,
 				4F7D97A528AEB2EE00C11E79 /* AboutTabController.swift */,
 				4F0D906B2E89731C005859A0 /* TabControllerUtility.swift */,
@@ -3542,6 +3545,7 @@
 				4F909D2A28A0C3D2009349A2 /* ResizingTabWindowController.swift in Sources */,
 				4FA06819291B2C4C00949B5F /* Shorthands.m in Sources */,
 				4F909D2228A0C3D2009349A2 /* ScrollTabController.swift in Sources */,
+				D07A5C0F2EC0A00100A1F012 /* ScrollTabMirroring.swift in Sources */,
 				4F6F67A028A8141800C6C40F /* ButtonTabController.swift in Sources */,
 				4FF6654E25F2C7B000689B77 /* SharedUtility.m in Sources */,
 				4F428CE72CD3D608006322AB /* DeviceUID.m in Sources */,

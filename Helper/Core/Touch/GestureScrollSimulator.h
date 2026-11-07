@@ -29,6 +29,9 @@ NS_ASSUME_NONNULL_BEGIN
 + (void)afterStartingMomentumScroll:(void (^ _Nullable)(void))callback;
 + (void)stopMomentumScroll;
 
+/// iPhone Mirroring [Nov 2026] – If non-zero, posted events get this senderID plus raw/accelerated deltas, and no gesture (type 29) events. See Scroll.m.
+@property (class, nonatomic) uint64_t mirroringSenderID;
+
 @end
 
 NS_ASSUME_NONNULL_END

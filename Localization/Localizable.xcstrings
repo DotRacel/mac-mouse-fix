@@ -14617,6 +14617,57 @@
         }
       }
     },
+    "scroll-mirroring.hint" : {
+      "comment" : "Hint below the 'iPhone Mirroring (Experimental)' checkbox in the Scrolling tab. Mac Mouse Fix needs a trackpad (built-in or Magic Trackpad) to be connected for this to work, and 'Smooth Scrolling' to be on.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Scroll smoothly in iPhone Mirroring, like with a trackpad. Needs Smooth Scrolling and a trackpad connected to this Mac."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "在 iPhone 镜像中像触控板一样平滑滚动。需要开启平滑滚动，并且这台 Mac 连接了触控板。"
+          }
+        }
+      }
+    },
+    "scroll-mirroring.speed-label" : {
+      "comment" : "Label in the Scrolling tab, below the 'iPhone Mirroring (Experimental)' checkbox. Followed by a popup button for choosing Low / Medium / High scroll speed, which only applies inside iPhone Mirroring.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Speed in iPhone Mirroring:"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "iPhone 镜像中的速度："
+          }
+        }
+      }
+    },
+    "scroll-mirroring.toggle" : {
+      "comment" : "Checkbox in the Scrolling tab. Turns on an experimental feature that makes the scroll wheel scroll smoothly in Apple's iPhone Mirroring app. Use Apple's official name for 'iPhone Mirroring' in your language.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "iPhone Mirroring (Experimental)"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "iPhone 镜像（实验性）"
+          }
+        }
+      }
+    },
     "system-settings-name" : {
       "comment" : "Note: The name of the system settings app in macOS 13 Ventura and later.",
       "localizations" : {

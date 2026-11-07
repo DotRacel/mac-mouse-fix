@@ -71,20 +71,22 @@ import Cocoa
         cache = nil
     }
     private static var cache: [_HT<MFScrollModificationResult, MFAxis, CGDirectDisplayID>: ScrollConfig]? = nil
-    
+    private static var mirroringCache: [_HT<MFScrollModificationResult, MFAxis, CGDirectDisplayID>: ScrollConfig]? = nil /// [Nov 2026] For scrolling in iPhone Mirroring, which has its own speed setting
+
     // MARK: Overrides
-    
-    @objc static func scrollConfig(modifiers: MFScrollModificationResult, inputAxis: MFAxis, display: CGDirectDisplayID) -> ScrollConfig {
+
+    @objc static func scrollConfig(modifiers: MFScrollModificationResult, inputAxis: MFAxis, display: CGDirectDisplayID, mirroring: Bool) -> ScrollConfig {
         assertRunLoop(configRunLoop()); /// [Oct 2026] This returns an instance of `ScrollConfig` All the per-instance-getters below don't have `assertRunLoop`. The only client is Scroll.m which has assertRunLoop() checks anyways [Oct 2026]
 
         /// Try to get result from cache
-        
-        if cache == nil {
+
+        if cache == nil || mirroringCache == nil {
             cache = .init()
+            mirroringCache = .init()
         }
         let key = _HT(a: modifiers, b: inputAxis, c: display)
-        
-        if let fromCache = cache![key] {
+
+        if let fromCache = mirroring ? mirroringCache![key] : cache![key] {
             return fromCache
 
         } else {
@@ -95,7 +97,7 @@ import Cocoa
             let new = _defaultInstance.copy() as! ScrollConfig
 
             /// Declare overridables
-            var u_speed = new.u_speed
+            var u_speed = mirroring ? new.u_iPhoneMirroringSpeed : new.u_speed /// iPhone Mirroring has its own speed setting [Nov 2026]
             var precise = new.u_precise
             var useQuickMod = modifiers.inputMod == kMFScrollInputModificationQuick
             var usePreciseMod = modifiers.inputMod == kMFScrollInputModificationPrecise
@@ -234,7 +236,8 @@ import Cocoa
             }
             
             /// Cache & return
-            cache![key] = new
+            if mirroring { mirroringCache![key] = new }
+            else         { cache![key] = new }
             return new
             
         }
@@ -483,6 +486,17 @@ import Cocoa
         }
     }()
     @objc lazy var u_precise: Bool = { c("precise") as! Bool }()
+
+    /// iPhone Mirroring [Nov 2026] – Experimental. See Scroll.m.
+    ///     Optional keys – older configs don't have them.
+    @objc lazy var u_iPhoneMirroring: Bool = { c("iPhoneMirroring") as? Bool ?? false }()
+    lazy var u_iPhoneMirroringSpeed: MFScrollSpeed = {
+        switch c("iPhoneMirroringSpeed") as? String ?? "medium" {
+        case "low":     return kMFScrollSpeedLow
+        case "high":    return kMFScrollSpeedHigh
+        default:        return kMFScrollSpeedMedium /// No "system" option – macOS acceleration produces line deltas, which don't make sense for iPhone Mirroring
+        }
+    }()
     
     /// Stored property
     ///     This is used by Scroll.m to determine how to accelerate

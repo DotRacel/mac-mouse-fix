@@ -56,6 +56,8 @@ class ScrollTabController: NSViewController {
     @IBOutlet weak var preciseModField: ModCaptureTextField!
     @IBOutlet weak var restoreDefaultModsButton: NSButton!
     
+    weak var mirroringSpeedPopup: NSPopUpButton? /// [Nov 2026] See `ScrollTabMirroring.swift`
+    
     /// Did appear
     
     override func viewDidAppear() {
@@ -323,5 +325,9 @@ class ScrollTabController: NSViewController {
                 }
 //            }
         }
+        
+        /// iPhone Mirroring [Nov 2026]
+        ///     See `ScrollTabMirroring.swift`
+        installMirroringSection()
     }
 }

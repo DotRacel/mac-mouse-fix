@@ -25,6 +25,10 @@
 		<string>high</string>
 		<key>speed</key>
 		<string>medium</string>
+		<key>iPhoneMirroring</key>
+		<false/>
+		<key>iPhoneMirroringSpeed</key>
+		<string>medium</string>
 	</dict>
 	<key>License</key>
 	<dict>

@@ -39,6 +39,54 @@ static VectorSubPixelator *_scrollLinePixelator;
 
 static TouchAnimator *_momentumAnimator;
 
+static uint64_t _mirroringSenderID = 0; /// [Nov 2026] See header and Scroll.m
++ (uint64_t)mirroringSenderID { return _mirroringSenderID; }
++ (void)setMirroringSenderID:(uint64_t)senderID { _mirroringSenderID = senderID; }
+
+static const double kMirroringRefEventInterval = 1.0/160.0; /// Median interval between real trackpad events in our log [Nov 2026]
+
+static double mirroringTimeSinceLastEvent(BOOL isGestureStart) {
+    static CFTimeInterval lastTime = 0;
+    CFTimeInterval now = CACurrentMediaTime();
+    double dt = isGestureStart ? kMirroringRefEventInterval : CLIP(now - lastTime, 1.0/250.0, 1.0/30.0);
+    lastTime = now;
+    return dt;
+}
+
+static double mirroringRawDelta(double pointDelta, double dt) {
+
+    /// Returns the raw delta that a real trackpad would send along with this point delta. [Nov 2026]
+    ///
+    /// Why: iOS takes the raw delta and applies its own trackpad acceleration. macOS also accelerates trackpad input, so for real trackpad events, `point ≈ macOSAccel(raw)`.
+    ///     To make iOS move the content like our point deltas say, we undo the macOS acceleration – i.e. we send the raw delta that the trackpad would have sent.
+    ///     We used to send `raw = 8/3 * point`. That's about right for slow scrolling, but 3-4x too large for fast scrolling (real raw/point drops from ~2 to ~0.75 as speed rises), so iOS over-accelerated fast scrolls and they looked jumpy.
+    ///
+    /// The table is measured from real trackpad events (gesture phase) in iPhone Mirroring on macOS 27.2 [Nov 2026]: Average raw delta per point-delta bin, with events ~1/160 s apart.
+    ///     Since the acceleration depends on speed, we scale the point delta to that event interval first, so this also works when our events come at a different rate (e.g. 60 Hz displays).
+
+    if (pointDelta == 0) return 0;
+
+    static const double points[] = { 0, 5,    15,   25,   35, 45, 55, 65, 75, 85, 105, 125 };
+    static const double raws[]   = { 0, 10.5, 26.4, 34.8, 42, 49, 56, 59, 67, 70, 80,  91  };
+    static const int n = sizeof(points)/sizeof(points[0]);
+
+    double scale = kMirroringRefEventInterval / dt;
+    double p = fabs(pointDelta) * scale;
+
+    double raw;
+    if (p >= points[n-1]) {
+        double slope = (raws[n-1] - raws[n-2]) / (points[n-1] - points[n-2]);
+        raw = raws[n-1] + slope * (p - points[n-1]);
+    } else {
+        int i = 1;
+        while (points[i] < p) i++;
+        double f = (p - points[i-1]) / (points[i] - points[i-1]);
+        raw = raws[i-1] + f * (raws[i] - raws[i-1]);
+    }
+
+    return copysign(raw / scale, pointDelta);
+}
+
 + (void)initialize {
     if (self == [GestureScrollSimulator class]) {
         _scrollLinePixelator = [VectorSubPixelator biasedPixelator]; /// I think biased is only beneficial on linePixelator. Too lazy to explain.
@@ -554,6 +602,20 @@ static void getDeltaVectors(Vector point, VectorSubPixelator *subPixelator, Vect
     CGEventSetIntegerValueField(e22, 99, phase);
     CGEventSetIntegerValueField(e22, 123, momentumPhase);
 
+    /// iPhone Mirroring [Nov 2026]
+    ///     iPhone Mirroring ignores our deltas unless the event has the senderID of a real HID service, and then it reads the raw and accelerated deltas. See Scroll.m for details.
+    ///     Raw/accelerated deltas are in device direction, so we undo the natural-scrolling flip (like real trackpad events do).
+    ///     The raw delta is what iOS uses for the scroll distance. See `mirroringRawDelta()`. The accelerated delta mirrors real events (≈ precise line delta).
+    if (_mirroringSenderID != 0) {
+        double deviceSign = invertedFromDevice ? -1 : 1;
+        double dt = mirroringTimeSinceLastEvent(phase == kIOHIDEventPhaseBegan);
+        CGEventSetIntegerValueField(e22, 87, (int64_t)_mirroringSenderID);                                 /// 87 -> senderID
+        CGEventSetDoubleValueField(e22, 178, deviceSign * mirroringRawDelta(vecScrollPoint.y, dt));      /// 178 -> kCGScrollWheelEventRawDeltaAxis1
+        CGEventSetDoubleValueField(e22, 177, deviceSign * mirroringRawDelta(vecScrollPoint.x, dt));      /// 177 -> kCGScrollWheelEventRawDeltaAxis2
+        CGEventSetDoubleValueField(e22, 176, deviceSign * vecScrollPoint.y / 10.0);                      /// 176 -> kCGScrollWheelEventAcceleratedDeltaAxis1
+        CGEventSetDoubleValueField(e22, 175, deviceSign * vecScrollPoint.x / 10.0);                      /// 175 -> kCGScrollWheelEventAcceleratedDeltaAxis2
+    }
+
     if ((0)) {
         /// Opus 5.5:
         /// Attach IOHIDEvent
@@ -580,8 +642,8 @@ static void getDeltaVectors(Vector point, VectorSubPixelator *subPixelator, Vect
     [MFEventTap postCGEvent: e22];
     CFRelease(e22);
     
-    if (phase != kIOHIDEventPhaseUndefined) {
-       
+    if (phase != kIOHIDEventPhaseUndefined && _mirroringSenderID == 0) { /// iPhone Mirroring doesn't need the gesture events (it only translates scroll events), so we don't risk it doing anything weird with them [Nov 2026]
+
         /// Create type 29 subtype 6 event
         ///     (gesture event)
         

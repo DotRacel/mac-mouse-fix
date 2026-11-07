@@ -30,6 +30,8 @@
 #import "Threads.h"
 
 @import IOKit;
+#import <IOKit/hidsystem/IOHIDEventSystemClient.h>
+#import <IOKit/hidsystem/IOHIDServiceClient.h>
 #import "MFHIDEventImports.h"
 #import "IOUtility.h"
 #import "MFEventTap.h"
@@ -62,6 +64,74 @@ static CFTimeInterval _lastScrollAnalysisResultTimeStamp;
 
 
 static MFReadWriteTracker _readWriteTracker;
+
+#pragma mark - iPhone Mirroring [Nov 2026]
+
+/// iPhone Mirroring needs special scroll events
+///
+/// How iPhone Mirroring handles scroll events: (Found by disassembling `UniversalHIDKit.ScrollEventTranslator` on macOS 27.2 – see upstream issues #1015, #1189, #1886)
+///     It turns each scroll NSEvent into an IOHIDEvent and sends that to the iPhone.
+///     - If the event's senderID (CGEvent field 87) is 0, it uses `scrollingDeltaX/Y` and no accelerated delta. -> That's what our synthesized events looked like.
+///     - Otherwise it uses `kCGScrollWheelEventRawDeltaAxis1/2` (fields 178/177) for the IOHIDEvent and appends `kCGScrollWheelEventAcceleratedDeltaAxis1/2` (176/175) as an accelerated child event. Phases and momentumPhases are passed along.
+///         It flips the deltas unless field 137 (`invertedFromDevice`) is 1, so raw/accelerated deltas are in 'device direction'. (Matches real trackpad events.)
+/// How iOS reacts: (Tested on iOS 27 / macOS 27.2 by posting different events into iPhone Mirroring)
+///     - Without phases: Scrolls in discrete jumps, like a scroll wheel.
+///     - With phases + senderID of a HID service that supports gesture scrolling (a trackpad): Smooth, trackpad-like scrolling with inertia.
+///     - With phases + senderID of a mouse: Still steppy. iOS seems to look at the properties of the sending device.
+///     - With phases + a made-up senderID: No scrolling at all.
+///     - The scroll distance is controlled by the raw delta. `raw ≈ 2.7 * pointDelta` feels like the trackpad. (That's also roughly the ratio in real trackpad events during the gesture phase.) The accelerated delta made no visible difference.
+/// So, while the pointer is over iPhone Mirroring, we send gesture scrolls with the senderID of a gesture-scrolling HID service (e.g. the built-in trackpad).
+///     If there's no such service (e.g. Mac mini with just a mouse), we keep the normal behavior.
+///     This is an experimental option (`Scroll.iPhoneMirroring`, off by default), with its own speed setting (`Scroll.iPhoneMirroringSpeed`). UI: `ScrollTabMirroring.swift`
+
+static uint64_t _mirroringSenderID = 0; /// Non-zero while scroll output goes to iPhone Mirroring. Then this is the senderID we put into the events.
+
+static uint64_t gestureScrollingHIDServiceID(void) {
+
+    /// Returns the registryID of a HID service that supports gesture scrolling (a trackpad), or 0.
+    /// We re-query at most every few seconds, since this is called on every first consecutive scroll tick while over iPhone Mirroring.
+
+    static uint64_t cachedID = 0;
+    static CFTimeInterval lastQueryTime = -INFINITY;
+    CFTimeInterval now = CACurrentMediaTime();
+    if (now - lastQueryTime < 5.0) return cachedID;
+    lastQueryTime = now;
+    cachedID = 0;
+
+    static IOHIDEventSystemClientRef client = NULL;
+    if (client == NULL) client = IOHIDEventSystemClientCreateSimpleClient(kCFAllocatorDefault);
+    if (client == NULL) return 0;
+
+    NSArray *services = CFBridgingRelease(IOHIDEventSystemClientCopyServices(client));
+    for (id serviceObj in services) {
+        IOHIDServiceClientRef service = (__bridge IOHIDServiceClientRef)serviceObj;
+        /// Is it a trackpad?
+        ///     The simple client can't read `SupportsGestureScrolling` (returns NULL – tested [Nov 2026]), but it can read `HIDScrollAccelerationType`. We check both in case that changes.
+        NSNumber *supportsGestureScrolling = CFBridgingRelease(IOHIDServiceClientCopyProperty(service, CFSTR("SupportsGestureScrolling")));
+        NSString *scrollAccelerationType = CFBridgingRelease(IOHIDServiceClientCopyProperty(service, CFSTR("HIDScrollAccelerationType")));
+        BOOL isTrackpad = ([supportsGestureScrolling isKindOfClass: NSNumber.class] && supportsGestureScrolling.boolValue)
+                       || ([scrollAccelerationType isKindOfClass: NSString.class] && [scrollAccelerationType isEqual: @"HIDTrackpadScrollAcceleration"]);
+        if (!isTrackpad) continue;
+        NSNumber *registryID = (__bridge NSNumber *)IOHIDServiceClientGetRegistryID(service); /// Get-rule - not owned
+        if (![registryID isKindOfClass: NSNumber.class]) continue;
+        cachedID = registryID.unsignedLongLongValue;
+        break;
+    }
+
+    return cachedID;
+}
+
+static uint64_t mirroringSenderIDForEvent(CGEventRef event) {
+
+    /// Returns the senderID to use if the scroll event goes to iPhone Mirroring, or 0.
+    /// Note: `appUnderMousePointerWithEvent:` is a bit slow. Only call this on the first consecutive tick.
+
+    if (!ScrollConfig.defaultInstance.u_iPhoneMirroring) return 0; /// Experimental, off by default. (`Scroll.iPhoneMirroring`)
+
+    NSRunningApplication *app = [HelperUtility appUnderMousePointerWithEvent: event];
+    if (![app.bundleIdentifier isEqual: @"com.apple.ScreenContinuity"]) return 0;
+    return gestureScrollingHIDServiceID();
+}
 
 #define kListenerID @"Scroll"
 
@@ -330,6 +400,15 @@ static void heavyProcessing(CGEventRef event, int64_t scrollDeltaAxis1, int64_t 
             //}
         }
         
+        /// Update iPhone Mirroring output mode [Nov 2026]
+        ///     See `mirroringSenderIDForEvent()`
+        uint64_t newMirroringSenderID = mirroringSenderIDForEvent(event);
+        if (newMirroringSenderID != _mirroringSenderID) {
+            DDLogInfo("Scroll.m: iPhone Mirroring output mode: %s (senderID: 0x%llx)", newMirroringSenderID != 0 ? "on" : "off", newMirroringSenderID);
+            allowNestedReadOrWrite() [Scroll resetState]; /// Stop animations meant for the previous app
+            _mirroringSenderID = newMirroringSenderID;
+        }
+
         /// Update modfications
         MFScrollModificationResult newMods = [ScrollModifiers currentModificationsWithEvent:event];
         if (![ScrollModifiers scrollModsAreEqual:newMods other:_modifications]) {
@@ -342,7 +421,7 @@ static void heavyProcessing(CGEventRef event, int64_t scrollDeltaAxis1, int64_t 
         [HelperUtility displayUnderMousePointer:&displayID withEvent:event];
         
         /// Get scrollConfig
-        _scrollConfig = [ScrollConfig scrollConfigWithModifiers:newMods inputAxis:inputAxis display:displayID];
+        _scrollConfig = [ScrollConfig scrollConfigWithModifiers:newMods inputAxis:inputAxis display:displayID mirroring:(_mirroringSenderID != 0)];
         
     } /// End `if (firstConsecutive) {`
     
@@ -795,7 +874,7 @@ static void sendScroll(int64_t px, MFDirection scrollDirection, BOOL animated, M
     if (!animated) {
         outputType = kMFScrollOutputTypeLineScroll;
     } else {
-        if (config.animationCurveParams.sendGestureScrolls) {
+        if (config.animationCurveParams.sendGestureScrolls || _mirroringSenderID != 0) { /// iPhone Mirroring only scrolls smoothly with gesture scrolls [Nov 2026]
             outputType = kMFScrollOutputTypeGestureScroll;
         } else {
             outputType = kMFScrollOutputTypeContinuousScroll;
@@ -868,8 +947,19 @@ static void sendOutputEvents(int64_t dx, int64_t dy, MFScrollOutputType outputTy
     if (outputType == kMFScrollOutputTypeGestureScroll) {
         
         /// --- GestureScroll ---
-        
-        if (!config.animationCurveParams.sendMomentumScrolls) {
+
+        /// iPhone Mirroring [Nov 2026]
+        ///     - Make GestureScrollSimulator put the senderID and raw/accelerated deltas into the events. Reset afterwards, so Click and Drag etc. aren't affected.
+        ///     - Send the whole animation – including our inertia – as one gesture phase. Never switch to momentum phase.
+        ///         Why: When the gesture ends, iOS flings the content with its own inertia, and the next scroll tick then starts a new gesture, which iOS treats like a finger touching down: The fling stops abruptly and scrolling restarts.
+        ///             When scrolling fast, this happened on every scroll swipe and looked like stop-and-go stutter. (In a log of 23 s of fast scrolling we started 60 gestures.)
+        ///         With one long gesture, iOS just follows our animation curve. New ticks while the animation runs continue the same gesture. The animation ends at a low speed, so iOS doesn't add a noticeable fling.
+        ///         (This also covers curves that aren't HybridCurves, where TouchAnimator gives no momentumHint.)
+        BOOL toMirroring = _mirroringSenderID != 0;
+        GestureScrollSimulator.mirroringSenderID = _mirroringSenderID;
+        if (toMirroring) momentumHint = kMFMomentumHintGesture;
+
+        if (!config.animationCurveParams.sendMomentumScrolls && !toMirroring) {
 
             mfassert(false, @""); /// Unused. IIRC this was used in early MMF 3 betas but felt bad or something. Not sure. [Sep 2026]
 
@@ -989,7 +1079,9 @@ static void sendOutputEvents(int64_t dx, int64_t dy, MFScrollOutputType outputTy
                 lastMomentumHint = kMFMomentumHintNone;
             }
         }
-        
+
+        GestureScrollSimulator.mirroringSenderID = 0;
+
     } else if (outputType == kMFScrollOutputTypeContinuousScroll) {
         
         /// --- ContinuousScroll ---
