@@ -419,9 +419,6 @@ static void heavyProcessing(CGEventRef event, int64_t scrollDeltaAxis1, int64_t 
         /// Disable suspension
         //_isSuspended = NO;
 
-        /// Notify TrialCounter.swift
-        [TrialCounter.shared handleUse];
-        
         /// Update active device
         allowNestedReadOrWrite() /// Can call back through `SwitchMaster_HelperStateChanged` > `processDragState` > `+[ModifiedDrag initializeDragWithDict:]` > `[Scroll resetState]`. This is because we currently call `+[ModifiedDrag initializeDragWithDict:]` for every SwitchMaster change which maybe is bad anyways. Will prevent that now, so can maybe delete this `allowNestedReadOrWrite()`. [Oct 2026]
         [HelperState.shared updateActiveDeviceWithEvent:event];
