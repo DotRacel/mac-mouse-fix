@@ -33,7 +33,6 @@
 #import "GestureScrollSimulator.h"
 #import "NSDictionary+Additions.h"
 #import "NSAttributedString+Additions.h"
-#import "License.h"
 #import "Locator.h"
 #import "NSAnimationManager.h"
 #import "Hyperlink.h"

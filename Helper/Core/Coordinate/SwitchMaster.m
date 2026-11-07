@@ -248,13 +248,6 @@ void SwitchMaster_Load_Manual(void) {
     logWithState(@"Initialized.");
 }
 
-void SwitchMaster_LockDown(void) {
-    assertRunLoop([IOThread runLoop]); readsAndWritesState(&_readWriteTracker); returnIfNotInitialized();
-
-    _state->_isLockedDown = 1;
-
-    if (processChangedState()) logWithState(@"Toggled due to lockdown.");
-}
 void SwitchMaster_HelperStateChanged(void) { /// For fast user switching [Oct 2026]
     assertRunLoop([IOThread runLoop]); readsAndWritesState(&_readWriteTracker); returnIfNotInitialized();
 

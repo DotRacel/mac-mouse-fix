@@ -15,7 +15,6 @@
 @class ScrollConfig; /// Forward decl, because this is a Swift type and leads to weird compiler errors if we import Swift [Oct 2026]
 
 void SwitchMaster_Load_Manual(void);
-void SwitchMaster_LockDown(void);
 void SwitchMaster_HelperStateChanged(void);
 void SwitchMaster_GeneralConfigChanged(MF_SWIFT_UNBRIDGED(NSDictionary *) generalConfig) NS_REFINED_FOR_SWIFT;
 void SwitchMaster_AttachedDevicesChanged(MF_SWIFT_UNBRIDGED(NSArray *)devices)           NS_REFINED_FOR_SWIFT;

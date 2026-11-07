@@ -42,21 +42,6 @@
     [MainAppState.shared.tabViewController coolSelectTabWithIdentifier:@"about" window:nil];
 }
 
-- (IBAction)activateLicense:(id)sender {
-    [LicenseSheetController add];
-}
-
-- (IBAction)buyMMF:(id)sender {
-    
-    [GetLicenseConfig getWith_callingFunc:NSStringFromSelector(_cmd) completionHandler:^(MFLicenseConfig * _Nonnull licenseConfig) {
-            
-        NSLocale *locale = NSLocale.currentLocale;
-        BOOL useQuickLink = NO;
-        
-        [LicenseUtility buyMMFWithLicenseConfig:licenseConfig locale:locale useQuickLink:useQuickLink];
-    }];
-}
-
 
 #pragma mark - Interface funcs
 
@@ -94,13 +79,7 @@
         queryItems[item.name] = item.value;
     }
     
-    if ([path isEqual:@"activate"]) {
-        
-        /// Open the license activation UI
-        
-        [LicenseSheetController add];
-        
-    } else if ([path isEqual:@"disable"]) {
+    if ([path isEqual:@"disable"]) {
         
         /// Switch to the general tab and then disable the helper
         

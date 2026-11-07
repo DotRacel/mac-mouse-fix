@@ -37,7 +37,6 @@
 #import "MFScrollView.h"
 #import "NSColor+Additions.h"
 #import "Utility_App.h"
-#import "License.h"
 #import "Hyperlink.h"
 #import "Locator.h"
 #import "Device.h"

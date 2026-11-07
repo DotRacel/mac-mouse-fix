@@ -1118,35 +1118,6 @@ final class LocalizationScreenshotClass: XCTestCase {
             }
         }
         
-        /// Screenshot special views only accessible through the menuBar
-        
-        do {
-            /// Find "activate" license menu item
-            let macMouseFixMenuItem = menuBar.menuBarItems.allElementsBoundByIndex[1]
-            macMouseFixMenuItem.click()
-            let macMouseFixMenu = macMouseFixMenuItem.menus.firstMatch
-            let activateLicenseItem = macMouseFixMenu.menuItems["axMenuItemActivateLicense"].firstMatch
-            
-            /// Click
-            activateLicenseItem.click()
-            
-            /// Delete license key
-            /// Delete license key from the textfield, so it's hidden in the screenshot, and the placeholder appears instead
-            app?.typeKey(.delete, modifierFlags: [])
-            
-            /// Find sheet
-            var sheet = window.sheets.firstMatch
-            
-            /// Sheenshot
-            result.append(takeLocalizationScreenshot(of: sheet, name: "ActivateLicenseSheet"))
-            
-            /// Screenshot toasts
-            result.append(contentsOf: sharedf_take_toast_screenshots("licensesheet", "ActivateLicenseSheet Toast %d"))
-            
-            /// Cleanup licenseSheet
-            hitEscape()
-        }
-        
         /// Screenshot AboutTab
         
         do {

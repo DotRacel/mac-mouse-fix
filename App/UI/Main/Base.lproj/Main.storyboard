@@ -28,27 +28,6 @@
                                                 <action selector="openAboutTab:" target="Voe-Tx-rLC" id="HWV-dp-GPx"/>
                                             </connections>
                                         </menuItem>
-                                        <menuItem isSeparatorItem="YES" id="EZF-ln-4YN"/>
-                                        <menuItem title="Activate License..." id="YBT-Ar-F4S">
-                                            <modifierMask key="keyEquivalentModifierMask"/>
-                                            <attributedString key="userComments">
-                                                <fragment content="Main Menu &gt; Mac Mouse Fix &gt; Activate License..."/>
-                                            </attributedString>
-                                            <accessibility identifier="axMenuItemActivateLicense"/>
-                                            <connections>
-                                                <action selector="activateLicense:" target="Voe-Tx-rLC" id="zHH-gf-IUB"/>
-                                            </connections>
-                                        </menuItem>
-                                        <menuItem title="Buy Mac Mouse Fix..." id="d0g-07-PaJ">
-                                            <modifierMask key="keyEquivalentModifierMask"/>
-                                            <attributedString key="userComments">
-                                                <fragment content="Main Menu &gt; Mac Mouse Fix &gt; Buy Mac Mouse Fix..."/>
-                                            </attributedString>
-                                            <accessibility identifier="axMenuItemBuyMacMouseFix"/>
-                                            <connections>
-                                                <action selector="buyMMF:" target="Voe-Tx-rLC" id="LM6-60-RNE"/>
-                                            </connections>
-                                        </menuItem>
                                         <menuItem isSeparatorItem="YES" id="er1-Mw-t0o"/>
                                         <menuItem title="Check for Updates..." id="3pt-ka-lxV">
                                             <modifierMask key="keyEquivalentModifierMask"/>
@@ -2497,95 +2476,6 @@ Also see CFBundleName in InfoPlist.xcstrings.</string>
                                             <userDefinedRuntimeAttribute type="boolean" keyPath="layer.masksToBounds" value="NO"/>
                                         </userDefinedRuntimeAttributes>
                                     </customView>
-                                    <stackView distribution="fill" orientation="vertical" alignment="leading" spacing="0.0" horizontalStackHuggingPriority="249.99998474121094" verticalStackHuggingPriority="249.99998474121094" detachesHiddenViews="YES" translatesAutoresizingMaskIntoConstraints="NO" id="oVK-8K-0DC" userLabel="BottomStack">
-                                        <rect key="frame" x="0.0" y="0.0" width="2258" height="273"/>
-                                        <subviews>
-                                            <customView verticalHuggingPriority="1000" horizontalCompressionResistancePriority="1000" verticalCompressionResistancePriority="1000" translatesAutoresizingMaskIntoConstraints="NO" id="L1E-qb-2j6" userLabel="Small divider">
-                                                <rect key="frame" x="0.0" y="215" width="2258" height="50"/>
-                                                <subviews>
-                                                    <box horizontalHuggingPriority="1000" verticalHuggingPriority="750" boxType="separator" translatesAutoresizingMaskIntoConstraints="NO" id="W3g-3J-FGr">
-                                                        <rect key="frame" x="0.0" y="-2" width="2258" height="54"/>
-                                                    </box>
-                                                </subviews>
-                                                <constraints>
-                                                    <constraint firstAttribute="trailing" secondItem="W3g-3J-FGr" secondAttribute="trailing" id="H3Y-Gw-q82"/>
-                                                    <constraint firstItem="W3g-3J-FGr" firstAttribute="leading" secondItem="L1E-qb-2j6" secondAttribute="leading" id="Mew-Rf-Hnw"/>
-                                                    <constraint firstItem="W3g-3J-FGr" firstAttribute="top" secondItem="L1E-qb-2j6" secondAttribute="top" id="NGV-zR-J96"/>
-                                                    <constraint firstAttribute="bottom" secondItem="W3g-3J-FGr" secondAttribute="bottom" id="uzD-vF-Trq"/>
-                                                </constraints>
-                                            </customView>
-                                            <customView horizontalHuggingPriority="1000" verticalHuggingPriority="1000" horizontalCompressionResistancePriority="1000" verticalCompressionResistancePriority="1000" translatesAutoresizingMaskIntoConstraints="NO" id="3dR-uI-bFa" userLabel="BottomRow">
-                                                <rect key="frame" x="0.0" y="2" width="2258" height="213"/>
-                                                <subviews>
-                                                    <stackView distribution="fill" orientation="horizontal" alignment="centerY" spacing="7" horizontalStackHuggingPriority="750" verticalStackHuggingPriority="750" horizontalHuggingPriority="750" horizontalCompressionResistancePriority="1000" verticalCompressionResistancePriority="1000" detachesHiddenViews="YES" translatesAutoresizingMaskIntoConstraints="NO" id="C9V-HB-2aU" customClass="TrialSection" customModule="Mac_Mouse_Fix" customModuleProvider="target">
-                                                        <rect key="frame" x="1021" y="12" width="217" height="189"/>
-                                                        <subviews>
-                                                            <imageView horizontalHuggingPriority="1000" verticalHuggingPriority="1000" horizontalCompressionResistancePriority="1000" verticalCompressionResistancePriority="1000" translatesAutoresizingMaskIntoConstraints="NO" id="Qse-14-whX">
-                                                                <rect key="frame" x="0.0" y="85.5" width="21" height="19"/>
-                                                                <constraints>
-                                                                    <constraint firstAttribute="width" constant="21" id="RSh-9n-AMC"/>
-                                                                    <constraint firstAttribute="height" constant="9" id="hqs-Af-z3e"/>
-                                                                </constraints>
-                                                                <imageCell key="cell" refusesFirstResponder="YES" alignment="left" id="CYC-bB-BzD">
-                                                                    <imageReference key="image" image="calendar" catalog="system" symbolScale="default"/>
-                                                                </imageCell>
-                                                                <color key="contentTintColor" name="labelColor" catalog="System" colorSpace="catalog"/>
-                                                                <symbolConfiguration key="symbolConfiguration" scale="large" weight="medium">
-                                                                    <nil key="locale"/>
-                                                                </symbolConfiguration>
-                                                                <userDefinedRuntimeAttributes>
-                                                                    <userDefinedRuntimeAttribute type="boolean" keyPath="wantsLayer" value="YES"/>
-                                                                    <userDefinedRuntimeAttribute type="boolean" keyPath="layer.masksToBounds" value="NO"/>
-                                                                </userDefinedRuntimeAttributes>
-                                                            </imageView>
-                                                            <textField focusRingType="none" horizontalHuggingPriority="1000" verticalHuggingPriority="1000" horizontalCompressionResistancePriority="1000" verticalCompressionResistancePriority="1000" translatesAutoresizingMaskIntoConstraints="NO" id="pEg-Ae-guC">
-                                                                <rect key="frame" x="26" y="87" width="193" height="16"/>
-                                                                <textFieldCell key="cell" alignment="center" title="&lt;Day 2/14 of your test period&gt;" usesSingleLineMode="YES" id="cul-5Z-iUo">
-                                                                    <font key="font" metaFont="system"/>
-                                                                    <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
-                                                                    <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
-                                                                </textFieldCell>
-                                                            </textField>
-                                                        </subviews>
-                                                        <visibilityPriorities>
-                                                            <integer value="1000"/>
-                                                            <integer value="1000"/>
-                                                        </visibilityPriorities>
-                                                        <customSpacing>
-                                                            <real value="3.4028234663852886e+38"/>
-                                                            <real value="3.4028234663852886e+38"/>
-                                                        </customSpacing>
-                                                        <connections>
-                                                            <outlet property="imageView" destination="Qse-14-whX" id="wVu-K1-Fj3"/>
-                                                            <outlet property="textField" destination="pEg-Ae-guC" id="Yv9-aw-HkI"/>
-                                                        </connections>
-                                                    </stackView>
-                                                </subviews>
-                                                <constraints>
-                                                    <constraint firstItem="C9V-HB-2aU" firstAttribute="centerY" secondItem="3dR-uI-bFa" secondAttribute="centerY" id="jiw-6e-UBt"/>
-                                                    <constraint firstItem="C9V-HB-2aU" firstAttribute="centerX" secondItem="3dR-uI-bFa" secondAttribute="centerX" id="tic-bQ-6Nc"/>
-                                                    <constraint firstItem="C9V-HB-2aU" firstAttribute="top" secondItem="3dR-uI-bFa" secondAttribute="top" constant="12" id="vBo-Ll-F5d"/>
-                                                </constraints>
-                                                <userDefinedRuntimeAttributes>
-                                                    <userDefinedRuntimeAttribute type="boolean" keyPath="wantsLayer" value="YES"/>
-                                                    <userDefinedRuntimeAttribute type="boolean" keyPath="layer.masksToBounds" value="NO"/>
-                                                </userDefinedRuntimeAttributes>
-                                            </customView>
-                                        </subviews>
-                                        <edgeInsets key="edgeInsets" left="0.0" right="0.0" top="8" bottom="2"/>
-                                        <visibilityPriorities>
-                                            <integer value="1000"/>
-                                            <integer value="1000"/>
-                                        </visibilityPriorities>
-                                        <customSpacing>
-                                            <real value="3.4028234663852886e+38"/>
-                                            <real value="3.4028234663852886e+38"/>
-                                        </customSpacing>
-                                        <userDefinedRuntimeAttributes>
-                                            <userDefinedRuntimeAttribute type="boolean" keyPath="wantsLayer" value="YES"/>
-                                            <userDefinedRuntimeAttribute type="boolean" keyPath="layer.masksToBounds" value="NO"/>
-                                        </userDefinedRuntimeAttributes>
-                                    </stackView>
                                 </subviews>
                                 <edgeInsets key="edgeInsets" left="0.0" right="0.0" top="18" bottom="0.0"/>
                                 <visibilityPriorities>
@@ -2596,10 +2486,8 @@ Also see CFBundleName in InfoPlist.xcstrings.</string>
                                     <integer value="1000"/>
                                     <integer value="1000"/>
                                     <integer value="1000"/>
-                                    <integer value="1000"/>
                                 </visibilityPriorities>
                                 <customSpacing>
-                                    <real value="3.4028234663852886e+38"/>
                                     <real value="3.4028234663852886e+38"/>
                                     <real value="3.4028234663852886e+38"/>
                                     <real value="3.4028234663852886e+38"/>
@@ -2628,8 +2516,6 @@ Also see CFBundleName in InfoPlist.xcstrings.</string>
                         <outlet property="moneyCell" destination="15g-eT-Sq8" id="zZ1-w3-fe4"/>
                         <outlet property="moneyCellImage" destination="dnN-4Q-oW6" id="Wfc-ft-E3q"/>
                         <outlet property="moneyCellLink" destination="X0k-mF-gia" id="Rnt-tA-JLe"/>
-                        <outlet property="trialCell" destination="C9V-HB-2aU" id="TP2-ib-83U"/>
-                        <outlet property="trialSectionContainer" destination="3dR-uI-bFa" id="uyR-Vo-Jmm"/>
                         <outlet property="versionField" destination="7TJ-vr-aAK" id="Jw9-cl-KD9"/>
                     </connections>
                 </viewController>

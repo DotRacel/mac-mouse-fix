@@ -145,9 +145,6 @@ import Cocoa
             //    actionArray[0][kMFRemapsKeyModificationPrecondition] = self.modifiers
             //}
 
-            /// Notify TrialCounter.swift
-            TrialCounter.shared.handleUse()
-            
             /// Execute actionArray
             if startOrEnd == kMFActionPhaseCombined {
                 Actions.executeActionArray(actionArray, phase: kMFActionPhaseCombined)

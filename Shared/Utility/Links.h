@@ -26,9 +26,6 @@ NS_ASSUME_NONNULL_BEGIN
 
 typedef NSString * MFLinkID;
 
-/// 'macmousefix:...' links
-#define kMFLinkID_MMFLActivate    @"MMFLActivate"
-
 /// General
 #define kMFLinkID_BuyMeAMilkshake @"BuyMeAMilkshake"
 

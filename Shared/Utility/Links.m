@@ -25,12 +25,7 @@
     {
         #define xxx(linkID_) else if ([linkID_ isEqual: linkID])
         if ((0)) {}
-                
-        /// `macmousefix:` links
-        xxx(kMFLinkID_MMFLActivate) {
-            result = @"macmousefix:activate";
-        }
-        
+
         /// General
         xxx(kMFLinkID_BuyMeAMilkshake) {
             result = redirectionServiceLink(@"buy-me-a-milkshake", nil, nil, @{ @"locale": currentLocale }); /// Note: We might want to move this link to GitHub Sponsors (https://github.com/sponsors/noah-nuebling) at some point.

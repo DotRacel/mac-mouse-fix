@@ -89,11 +89,10 @@ import Foundation
     ]
     static let simpleToastMap_Scrolling: [[String: Any]] = []
     static let simpleToastMap_About: [[String: Any]] = []
-    static let simpleToastMap_LicenseSheet: [[String: Any]] = []
-    
+
     static let simpleToastMap: [String: () -> ()] = {
         var result = [:]
-        for map in [simpleToastMap_General, simpleToastMap_Buttons, simpleToastMap_Scrolling, simpleToastMap_About, simpleToastMap_LicenseSheet] {
+        for map in [simpleToastMap_General, simpleToastMap_Buttons, simpleToastMap_Scrolling, simpleToastMap_About] {
             for entry in map {
                 result[entry["key"] as! AnyHashable] = entry["block"]
             }

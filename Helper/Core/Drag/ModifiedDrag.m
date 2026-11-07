@@ -501,10 +501,7 @@ static void handleMouseInputWhileInitialized(int64_t deltaX, int64_t deltaY, CGP
         
         /// Notify output plugin
         [_drag.outputPlugin handleBecameInUse];
-        
-        /// Notify TrialCounter.swift
-        [TrialCounter.shared handleUse];
-        
+
         /// Notify other modules
         [Modifiers handleModificationHasBeenUsed];
 //        (void)[OutputCoordinator suspendTouchDriversFromDriver:kTouchDriverModifiedDrag];
