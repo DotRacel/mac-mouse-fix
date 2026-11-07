@@ -40,11 +40,11 @@ typedef enum {
 /// `MF_DEV_BUNDLE_IDS`: Opt-in for local development builds signed with a different team. Lets them run alongside an installed release copy without fighting over launchd/BTM records, Accessibility permissions or the config file.
 ///     Must be set together with the matching `PRODUCT_BUNDLE_IDENTIFIER` overrides for the app and helper targets. Never set for release builds.
 #if MF_DEV_BUNDLE_IDS
-    #define kMFBundleIDApp      @"com.nuebling.mac-mouse-fix.dev"
-    #define kMFBundleIDHelper   @"com.nuebling.mac-mouse-fix.dev.helper"
+    #define kMFBundleIDApp      @"dev.racel.mac-mouse-fix.dev"
+    #define kMFBundleIDHelper   @"dev.racel.mac-mouse-fix.dev.helper"
 #else
-    #define kMFBundleIDApp      @"com.nuebling.mac-mouse-fix"
-    #define kMFBundleIDHelper   @"com.nuebling.mac-mouse-fix.helper"
+    #define kMFBundleIDApp      @"dev.racel.mac-mouse-fix"
+    #define kMFBundleIDHelper   @"dev.racel.mac-mouse-fix.helper"
 #endif
 
 //#define kMFRelativeAccomplicePath           @"Contents/Library/LaunchServices/Mac Mouse Fix Accomplice"
