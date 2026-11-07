@@ -5,5 +5,16 @@
     <link>https://raw.githubusercontent.com/DotRacel/mac-mouse-fix/update-feed/appcast.xml</link>
     <description>Releases of the DotRacel personal fork of Mac Mouse Fix. Not official.</description>
     <language>en</language>
+    <item>
+    <title>3.1.0 (25416)</title>
+    <pubDate>Sat, 07 Nov 2026 17:49:53 +0000</pubDate>
+    <sparkle:minimumSystemVersion>10.15.0</sparkle:minimumSystemVersion>
+    <description><![CDATA[
+<ul>
+<li>更新源改为本 fork 自己的 update-feed（自己的签名密钥）</li>
+</ul>
+    ]]></description>
+    <enclosure url="https://github.com/DotRacel/mac-mouse-fix/releases/download/3.1.0-25416/MacMouseFix-3.1.0-25416.zip" sparkle:version="25416" sparkle:shortVersionString="3.1.0" sparkle:edSignature="I3yDFi+Aff/dKqBwW9KbcUU3eyQAnfngN7e6ATswcT94YzGSROxIP3zfwgS/Scecos5U0c3DjVL18wh0a/swCA==" length="7623994" type="application/octet-stream"/>
+    </item>
 </channel>
 </rss>
