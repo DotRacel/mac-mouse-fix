@@ -37,8 +37,15 @@ typedef enum {
 /// Bundles and Bezelservices
 
 /// Added some x's to the bundleID. See notes.md for context.
-#define kMFBundleIDApp      @"com.nuebling.mac-mouse-fix"
-#define kMFBundleIDHelper   @"com.nuebling.mac-mouse-fix.helper"
+/// `MF_DEV_BUNDLE_IDS`: Opt-in for local development builds signed with a different team. Lets them run alongside an installed release copy without fighting over launchd/BTM records, Accessibility permissions or the config file.
+///     Must be set together with the matching `PRODUCT_BUNDLE_IDENTIFIER` overrides for the app and helper targets. Never set for release builds.
+#if MF_DEV_BUNDLE_IDS
+    #define kMFBundleIDApp      @"com.nuebling.mac-mouse-fix.dev"
+    #define kMFBundleIDHelper   @"com.nuebling.mac-mouse-fix.dev.helper"
+#else
+    #define kMFBundleIDApp      @"com.nuebling.mac-mouse-fix"
+    #define kMFBundleIDHelper   @"com.nuebling.mac-mouse-fix.helper"
+#endif
 
 //#define kMFRelativeAccomplicePath           @"Contents/Library/LaunchServices/Mac Mouse Fix Accomplice"
 #define kMFRelativeHelperAppPath            @"Contents/Library/LoginItems/Mac Mouse Fix Helper.app"
@@ -57,8 +64,9 @@ typedef enum {
 /// ^ The old value "mouse.fix.helper" was also used with the old prefpane version which could lead to conflicts. See Mail beginning with 'I attached the system log. Happening with this version too'. Edit: We moved back to the old `mouse.fix.helper` label for the app version of Mac Mouse Fix. Reasoning:
 ///      We meant to move the launchd label over to a new one to avoid conlicts when upgrading from the old prefpane, but I think it can actually lead to more complications. Also we'd fragment things, because the first few versions of the app version already shipped with the old "mouse.fix.helper" label.
 
-#define kMFLaunchdHelperIdentifierSM  @"com.nuebling.mac-mouse-fix.helper"
+#define kMFLaunchdHelperIdentifierSM  kMFBundleIDHelper
 /// ^ Keep this in sync with `sm_launchd.plist`
+///     (The `Label` in the copy of `sm_launchd.plist` inside the built app is set to `$(PRODUCT_BUNDLE_IDENTIFIER).helper` by the "Sync sm_launchd.plist Label" build phase, so it follows `kMFBundleIDHelper`.)
 /// ^ We finally moved to this new label when moving to the new Service Management API for enabling the Helper as background task for Ventura.
 /// We experienced strange issues when using the old label, so we're giving this new one a try.
 

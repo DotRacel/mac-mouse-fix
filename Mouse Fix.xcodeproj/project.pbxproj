@@ -3034,6 +3034,7 @@
 				4F94F68E25E5EF1100D9F24A /* Embed Frameworks (Redundant with Link Binary Phase?) */,
 				4F94F5EC25E5EC2500D9F24A /* Resources */,
 				4F9111F8289FF25D00D2DD8C /* Copy sm_launchd.plist */,
+				4F0DE5B1D0B5C2A7E9F31A42 /* Sync sm_launchd.plist Label */,
 				4F94F72E25E612AB00D9F24A /* Copy MMF Helper */,
 			);
 			buildRules = (
@@ -3399,6 +3400,25 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXShellScriptBuildPhase section */
+		4F0DE5B1D0B5C2A7E9F31A42 /* Sync sm_launchd.plist Label */ = {
+			isa = PBXShellScriptBuildPhase;
+			alwaysOutOfDate = 1;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+			);
+			name = "Sync sm_launchd.plist Label";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "# Set the launchd `Label` of the copied sm_launchd.plist to `<app bundle id>.helper`, so it always matches `kMFLaunchdHelperIdentifierSM` (Constants.h).\n# - Normal builds: yields the original value (com.nuebling.mac-mouse-fix.helper) -> no change.\n# - Local dev builds with `MF_DEV_BUNDLE_IDS`: yields the dev label.\nplist=\"${TARGET_BUILD_DIR}/${WRAPPER_NAME}/Contents/Library/LaunchAgents/sm_launchd.plist\"\n/usr/libexec/PlistBuddy -c \"Set :Label ${PRODUCT_BUNDLE_IDENTIFIER}.helper\" \"$plist\"\n";
+		};
 		4F94F75125E614D500D9F24A /* Increment Build Number */ = {
 			isa = PBXShellScriptBuildPhase;
 			alwaysOutOfDate = 1;
