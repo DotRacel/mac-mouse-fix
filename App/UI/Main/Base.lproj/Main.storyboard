@@ -2477,7 +2477,7 @@ Also see CFBundleName in InfoPlist.xcstrings.</string>
                                         </userDefinedRuntimeAttributes>
                                     </customView>
                                 </subviews>
-                                <edgeInsets key="edgeInsets" left="0.0" right="0.0" top="18" bottom="0.0"/>
+                                <edgeInsets key="edgeInsets" left="0.0" right="0.0" top="18" bottom="20"/>
                                 <visibilityPriorities>
                                     <integer value="1000"/>
                                     <integer value="1000"/>
