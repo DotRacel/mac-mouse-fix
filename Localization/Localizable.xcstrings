@@ -12999,6 +12999,125 @@
         }
       }
     },
+    "scroll-app-filter.add.choose" : {
+      "comment" : "Menu item that opens a file picker for adding an app to the App Exceptions list.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Choose App…"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "选择 App…"
+          }
+        }
+      }
+    },
+    "scroll-app-filter.add.running-header" : {
+      "comment" : "Section header in the menu for adding apps to the App Exceptions list.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Running Apps"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "正在运行的 App"
+          }
+        }
+      }
+    },
+    "scroll-app-filter.done" : {
+      "comment" : "Button that closes the App Exceptions sheet.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Done"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "完成"
+          }
+        }
+      }
+    },
+    "scroll-app-filter.edit-button" : {
+      "comment" : "Button next to 'App Exceptions:' in the Scrolling tab. Opens a sheet for editing the list of apps.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Edit…"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "编辑…"
+          }
+        }
+      }
+    },
+    "scroll-app-filter.hint" : {
+      "comment" : "Hint at the bottom of the App Exceptions sheet. 'Reverse Direction' refers to the checkbox in the Scrolling tab – use the same translation as there.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "These apps get native scroll wheel input. Reverse Direction still applies."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "这些 App 使用原生滚轮输入，「反转方向」仍然生效。"
+          }
+        }
+      }
+    },
+    "scroll-app-filter.label" : {
+      "comment" : "Label in the Scrolling tab. Followed by a button that opens the list of apps where Mac Mouse Fix turns off smooth scrolling.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "App Exceptions:"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "App 例外："
+          }
+        }
+      }
+    },
+    "scroll-app-filter.sheet-title" : {
+      "comment" : "Title at the top of the App Exceptions sheet, above the list of apps.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Turn off smooth scrolling in these apps:"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "在这些 App 中关闭平滑滚动："
+          }
+        }
+      }
+    },
     "scroll-effect.4-pinch" : {
       "comment" : "",
       "localizations" : {
