@@ -93,7 +93,7 @@ typedef enum {
 /// Web URLs
 
 #define kMFWebsiteAddress  @"https://noah-nuebling.github.io/mac-mouse-fix-website"
-#define kMFUpdateFeedRepoAddressRaw @"https://raw.githubusercontent.com/noah-nuebling/mac-mouse-fix/update-feed"
+#define kMFUpdateFeedRepoAddressRaw @"https://raw.githubusercontent.com/DotRacel/mac-mouse-fix/update-feed" /// [Nov 2026] Points to the DotRacel fork's own feed (signed with the fork's own SUPublicEDKey).
 
 /// Sparkle
 

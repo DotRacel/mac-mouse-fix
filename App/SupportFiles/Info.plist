@@ -48,9 +48,9 @@
 	<key>SUEnableJavaScript</key>
 	<string>YES</string>
 	<key>SUFeedURL</key>
-	<string>https://raw.githubusercontent.com/noah-nuebling/mac-mouse-fix/update-feed/appcast.xml</string>
+	<string>https://raw.githubusercontent.com/DotRacel/mac-mouse-fix/update-feed/appcast.xml</string>
 	<key>SUPublicEDKey</key>
-	<string>ZC69ciDfGYN4t3kwRiPc2SC7J4hchv9w+FfVv59r4+U=</string>
+	<string>hdFvYk9QrKmV03aXTgPqNWuKWw7S7eVRzChxRZK3tz0=</string>
 	<key>UIDesignRequiresCompatibility</key>
 	<true/>
 </dict>
