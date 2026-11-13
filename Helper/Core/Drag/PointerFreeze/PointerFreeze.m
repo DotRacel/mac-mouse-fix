@@ -24,6 +24,8 @@
 #import "MFGate.h"
 #import "MFEventTap.h"
 #import "WarpDeltaCompensator.h"
+#import "DisplayLink.h"
+#import <os/lock.h>
 
 @implementation PointerFreeze
 
@@ -38,6 +40,15 @@ static int _cgsConnection; /// This is used by private APIs to talk to the windo
 static NSCursor *_puppetCursor;
 static NSImageView *_puppetCursorView;
 static CGDirectDisplayID _display;
+static CGRect _displayBounds; /// Cached `CGDisplayBounds(_display)`. Measured ~15 µs per call, and we used to call it for every mouse event [Nov 2026]
+
+/// Coalescing of mouse movement [Nov 2026]
+///     See `mouseMovedCallback()`
+static DisplayLink *_coalescingDisplayLink;     ///< Owned by `_ioThreadRunLoop()`
+static os_unfair_lock _pendingLock = OS_UNFAIR_LOCK_INIT;
+static int64_t _pendingDx, _pendingDy;          ///< Movement not yet applied on the mainThread. Protected by `_pendingLock`
+static int64_t _pendingEventCount;              ///< Protected by `_pendingLock`
+static bool _mainFlushScheduled;                ///< True while a `flushPendingMovement()` block is queued on the mainThread. Protected by `_pendingLock`
 
 static CFTimeInterval _lastEventTimestamp;
 static int64_t _lastEventDelta;
@@ -48,6 +59,11 @@ static WarpDeltaCompensator _warpDeltaCompensator = { .name = "PointerFreeze" };
 #define slowWindowServerRunLoop()   CFRunLoopGetMain()  ///< runLoop for doing WindowServer IPC which can block for a long time. Only before the slow calls as documentation. See `Slow WindowServer IPC` notes. [Oct 2026]
 
 #define kListenerID @"PointerFreeze"
+
+static int64_t takePendingMovement(int64_t *dxOut, int64_t *dyOut);
+static void scheduleMainFlush(void);
+static void flushPendingMovement(void);
+static void coalescingDisplayLinkCallback(void);
 
 
 /// + initialize
@@ -104,6 +120,9 @@ static void freezePointer(CGPoint origin, BOOL keepPointerMoving) {
         _keepPointerMoving = keepPointerMoving;
         WarpDeltaCompensator_ReportFreeze(&_warpDeltaCompensator, _origin);
 
+        /// Discard leftover movement from the previous freeze (Should already be 0 since `unfreeze` drains it) [Nov 2026]
+        takePendingMovement(NULL, NULL);
+
         /// Decrease delay after warping
         ///     But only as much so that it doesn't break `CGWarpMouseCursorPosition(()` ability to stop cursor by calling repeatedly
         ///     This changes the timeout globally for many events, so we need to reset this after the drag is deactivated!
@@ -120,6 +139,7 @@ static void freezePointer(CGPoint origin, BOOL keepPointerMoving) {
             /// Get display under mouse pointer
             CVReturn rt = [HelperUtility display:&_display atPoint:_origin];
             if (rt != kCVReturnSuccess) DDLogWarn("Couldn't get display under mouse pointer in PointerFreeze");
+            _displayBounds = CGDisplayBounds(_display);
 
             /// Draw puppet cursor before hiding
             drawPuppetCursor(kPuppetCursorCommand_Draw);
@@ -177,34 +197,110 @@ void mouseMovedCallback(MFEventType eventType, CGEventRef *eventPtr) {
     /// Check interrupt
     if (![MFEventTap isEnabledForListener: kListenerID]) return;
 
+    /// Queue the movement for the mainThread
+    ///     [Nov 2026] We used to `mfrun()` a warp + puppet cursor move to the mainThread for every single mouse event.
+    ///         With high polling-rate mice (1000+ Hz) that's 1000+ `CGWarpMouseCursorPosition` IPC calls and CALayer updates per second, while the display only shows 60-144 frames.
+    ///     Now we sum up the deltas and flush them to the mainThread about once per frame:
+    ///         - The first event after a pause is flushed right away, so the first warp after `freezePointer()` isn't delayed. (See `warpDeltas` notes in ModifiedDrag.m)
+    ///         - While events keep coming, `_coalescingDisplayLink` flushes once per frame. It stops on the first frame without events.
+    ///         - If the mainThread is slow (See `Slow WindowServer IPC` notes in ModifiedDrag.m), at most one flush is queued, so slow warps don't pile up.
+    ///     Warping once per frame should still keep the pointer frozen, since each warp suppresses pointer movement for `kMFEventSuppressionInterval_ForLockingPointerByWarping` (70 ms), which is longer than a frame.
+    os_unfair_lock_lock(&_pendingLock);
+    _pendingDx += dx;
+    _pendingDy += dy;
+    _pendingEventCount += 1;
+    os_unfair_lock_unlock(&_pendingLock);
+
+    if (!_coalescingDisplayLink) {
+        _coalescingDisplayLink = [DisplayLink displayLinkWithPhaseShift: kVBLPhase_DefaultForAppKitUpdates runLoop: _ioThreadRunLoop() name: @"PointerFreezeCoalescing"];
+    }
+    if (!_coalescingDisplayLink.isRunning) {
+        scheduleMainFlush();
+        [_coalescingDisplayLink linkToMainScreen];
+        [_coalescingDisplayLink startWithCallback: ^(DisplayLinkCallbackTimeInfo timeInfo) { coalescingDisplayLinkCallback(); }];
+    }
+}
+
+static void coalescingDisplayLinkCallback(void) {
+    assertRunLoop(_ioThreadRunLoop());
+
+    os_unfair_lock_lock(&_pendingLock);
+    bool hasPending = _pendingEventCount > 0;
+    os_unfair_lock_unlock(&_pendingLock);
+
+    if (hasPending) scheduleMainFlush();
+    else            [_coalescingDisplayLink stop]; /// No events this frame. The next event will be flushed right away and restart us. [Nov 2026]
+}
+
+static void scheduleMainFlush(void) {
+
+    /// Queue a `flushPendingMovement()` on the mainThread, unless one is already queued. Thread-safe. [Nov 2026]
+
+    os_unfair_lock_lock(&_pendingLock);
+    bool alreadyScheduled = _mainFlushScheduled;
+    _mainFlushScheduled = true;
+    os_unfair_lock_unlock(&_pendingLock);
+
+    if (alreadyScheduled) return;
+
     mfrun(pointerFreezeRunLoop(), ^{ /// Defer so the per-event callback does not block on `slowWindowServerRunLoop()` stuff, competing with the `_smoothingAnimator`. See `Slow WindowServer IPC` notes. [Oct 2026]
-
-        /// Check interrupt
-        if (![MFEventTap isEnabledForListener: kListenerID]) return;
-
-        /// Warp pointer to origin to prevent cursor movement
-        ///     This only works when the suppressionInterval is a certain size, and that will cause a slight stutter / delay until the mouse starts moving againg when we deactivate. So this isn't optimal
-        assertRunLoop(slowWindowServerRunLoop()); /// Observed `CGWarpMouseCursorPosition` to be slow. See `Slow WindowServer IPC` notes. [Oct 2026]
-        CGWarpMouseCursorPosition(_origin);
-
-        /// Move pointer to origin instead of usageOrigin to make scroll events dispatch there - would be nice but that moves the pointer, which creates events which will feed back into our eventTap and mess everything up (even though `CGWarpMouseCursorPosition` docs say that it doesn't create events??)
-        ///     I gues we'll just have to make the usageThreshold small instead
-        #if 0
-        CGWarpMouseCursorPosition(_drag->origin);
-        #endif
-
-        /// Disassociate pointer to prevent cursor movements
-        ///     This makes the inputDeltas weird I feel. Better to freeze pointer through calling CGWarpMouseCursorPosition repeatedly.
-        if ((0)) CGAssociateMouseAndMouseCursorPosition(NO);
-
-        if (_keepPointerMoving) {
-            /// Update puppetCursorPosition
-            updatePuppetCursorPosition(dx, dy);
-            /// Draw puppet cursor
-            drawPuppetCursor(kPuppetCursorCommand_Move);
-        }
-
+        flushPendingMovement();
     });
+}
+
+static int64_t takePendingMovement(int64_t *dxOut, int64_t *dyOut) {
+
+    /// Takes the summed-up movement and resets it. Returns the number of events it came from. Thread-safe. [Nov 2026]
+    ///     Doesn't touch `_mainFlushScheduled` – only `flushPendingMovement()` clears that, so it always matches whether a flush is queued.
+
+    os_unfair_lock_lock(&_pendingLock);
+    if (dxOut) *dxOut = _pendingDx;
+    if (dyOut) *dyOut = _pendingDy;
+    int64_t count = _pendingEventCount;
+    _pendingDx = 0;
+    _pendingDy = 0;
+    _pendingEventCount = 0;
+    os_unfair_lock_unlock(&_pendingLock);
+
+    return count;
+}
+
+static void flushPendingMovement(void) {
+
+    assertRunLoop(pointerFreezeRunLoop());
+
+    /// Take movement
+    os_unfair_lock_lock(&_pendingLock);
+    _mainFlushScheduled = false;
+    os_unfair_lock_unlock(&_pendingLock);
+    int64_t dx, dy;
+    int64_t eventCount = takePendingMovement(&dx, &dy);
+    if (eventCount == 0) return; /// `unfreeze` already drained it
+
+    /// Check interrupt
+    if (![MFEventTap isEnabledForListener: kListenerID]) return;
+
+    /// Warp pointer to origin to prevent cursor movement
+    ///     This only works when the suppressionInterval is a certain size, and that will cause a slight stutter / delay until the mouse starts moving againg when we deactivate. So this isn't optimal
+    assertRunLoop(slowWindowServerRunLoop()); /// Observed `CGWarpMouseCursorPosition` to be slow. See `Slow WindowServer IPC` notes. [Oct 2026]
+    CGWarpMouseCursorPosition(_origin);
+
+    /// Move pointer to origin instead of usageOrigin to make scroll events dispatch there - would be nice but that moves the pointer, which creates events which will feed back into our eventTap and mess everything up (even though `CGWarpMouseCursorPosition` docs say that it doesn't create events??)
+    ///     I gues we'll just have to make the usageThreshold small instead
+    #if 0
+    CGWarpMouseCursorPosition(_drag->origin);
+    #endif
+
+    /// Disassociate pointer to prevent cursor movements
+    ///     This makes the inputDeltas weird I feel. Better to freeze pointer through calling CGWarpMouseCursorPosition repeatedly.
+    if ((0)) CGAssociateMouseAndMouseCursorPosition(NO);
+
+    if (_keepPointerMoving) {
+        /// Update puppetCursorPosition
+        updatePuppetCursorPosition(dx, dy);
+        /// Draw puppet cursor
+        drawPuppetCursor(kPuppetCursorCommand_Move);
+    }
 }
 
 + (void)unfreeze {
@@ -217,17 +313,27 @@ void mouseMovedCallback(MFEventType eventType, CGEventRef *eventPtr) {
     /// Process timestamp
     BOOL pointerIsMoving = (timeSinceLastEvent < GeneralConfig.mouseMovingMaxIntervalSmall) && lastEventDelta > 0;
 
+    /// Stop coalescing [Nov 2026]
+    [_coalescingDisplayLink stop];
+
     mfrunAndWait(pointerFreezeRunLoop(), ^{
 
         /// Debug
         /// Doing this outside the queue led to race conditions (I think?)
         DDLogDebug("PointerFreeze - UNfreezing");
         DDLogDebug("PointerFreeze - pointerIsMoving: %d - time: %f, delta: %lld", pointerIsMoving, timeSinceLastEvent, lastEventDelta);
-        
+
         /// Disable eventTap
         /// Think about the order of getting pos, unfreezing, and disabling event tap. -> I think it doesn't matter since everything is locked.
         [MFEventTap enable: false forListener: kListenerID];
-        
+
+        /// Apply movement that hasn't been flushed yet [Nov 2026]
+        ///     So we warp to where the puppet cursor would be, as if every event had been applied right away (like before coalescing). No need to move the puppet cursor, since we undraw it below.
+        int64_t pendingDx, pendingDy;
+        if (takePendingMovement(&pendingDx, &pendingDy) > 0 && _keepPointerMoving) {
+            updatePuppetCursorPosition(pendingDx, pendingDy);
+        }
+
         CGPoint warpDestination;
         if (_keepPointerMoving) {
             setEventSuppressionInterval(kMFEventSuppressionInterval_ForWarpingPointerToPuppet);
@@ -432,7 +538,7 @@ static void updatePuppetCursorPosition(int64_t dx, int64_t dy) {
     pos.y += dy;
     
     /// Clip puppet pos to screen bounds
-    CGRect screenBounds = CGDisplayBounds(_display);
+    CGRect screenBounds = _displayBounds; /// Cached in `freezePointer()` [Nov 2026]
     pos.x = CLIP(pos.x, CGRectGetMinX(screenBounds), CGRectGetMaxX(screenBounds)-1);
     pos.y = CLIP(pos.y, CGRectGetMinY(screenBounds), CGRectGetMaxY(screenBounds)-1);
     
