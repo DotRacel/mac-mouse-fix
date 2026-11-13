@@ -99,6 +99,13 @@ import QuartzCore
         super.init()
     }
 
+    /// Constants
+
+    /// The first `minBaseCurveTime` seconds of a HybridCurve animation always get `kMFMomentumHintGesture`. See `displayLinkCallback()`.
+    ///     [Nov 2026] This used to be `ScrollConfig().consecutiveScrollTickIntervalMax`, evaluated every frame. That allocated a fresh `ScrollConfig` and did 2 slow `objectForCoolKeyPath` lookups each frame (on IOThread, while `ScrollConfig.reload()` writes the raw config on `configRunLoop()`).
+    ///         A fresh `ScrollConfig` never has the per-modifier overrides from `scrollConfig(modifiers:...)`, so the result was always the default `consecutiveScrollTickIntervalMax` – 160 ms for every animation curve. Keep this in sync if that default changes.
+    static let minBaseCurveTime: CFTimeInterval = 160.0/1000
+
     /// Vars - Start & stop
     
     internal var animationDurationRaw: CFTimeInterval = 0
@@ -443,7 +450,7 @@ import QuartzCore
             /// Do get momentumHint
             
             let timeSinceAnimationStart = frameTime - animationStartTime
-            let minBaseCurveTime = ScrollConfig().consecutiveScrollTickIntervalMax
+            let minBaseCurveTime = TouchAnimatorBase.minBaseCurveTime
             
             /// DEBUG
             //minBaseCurveTime = 0.0
