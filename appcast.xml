@@ -6,6 +6,18 @@
     <description>Releases of the DotRacel personal fork of Mac Mouse Fix. Not official.</description>
     <language>en</language>
     <item>
+    <title>3.1.0 (25418)</title>
+    <pubDate>Fri, 13 Nov 2026 07:39:55 +0000</pubDate>
+    <sparkle:minimumSystemVersion>10.15.0</sparkle:minimumSystemVersion>
+    <description><![CDATA[
+<ul>
+<li>优化拖拽滚动（Click and Drag → Scroll &amp; Navigate）的性能：冻结指针和移动替身光标改为每帧最多一次，不再每个鼠标事件都处理一次，高回报率鼠标下 CPU 和 WindowServer 负担明显降低</li>
+<li>优化平滑滚动：去掉每帧重复读取配置的开销</li>
+</ul>
+    ]]></description>
+    <enclosure url="https://github.com/DotRacel/mac-mouse-fix/releases/download/3.1.0-25418/MacMouseFix-3.1.0-25418.zip" sparkle:version="25418" sparkle:shortVersionString="3.1.0" sparkle:edSignature="XhauVZ2ybAXWblVnoBPMsJgqcfrCb/maIfhkg3DlBruoZ1RlG5m84EAzNXcHV4MvBSahTiNC8yWc+A9WSRgzBQ==" length="7627285" type="application/octet-stream"/>
+    </item>
+    <item>
     <title>3.1.0 (25416)</title>
     <pubDate>Sat, 07 Nov 2026 17:49:53 +0000</pubDate>
     <sparkle:minimumSystemVersion>10.15.0</sparkle:minimumSystemVersion>
